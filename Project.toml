@@ -1,0 +1,4 @@
+name = "FSGenerator"
+uuid = "041123ec-db0f-41bd-b607-58faf22b65bc"
+authors = ["Davis Thuillier <dsthuillier@gmail.com>"]
+version = "0.1.0"
