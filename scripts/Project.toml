@@ -1,0 +1,4 @@
+[deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Contour = "d38c429a-6771-53c6-b99e-75d170b6e991"
+FSGenerator = "041123ec-db0f-41bd-b607-58faf22b65bc"

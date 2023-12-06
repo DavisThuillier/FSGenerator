@@ -2,3 +2,9 @@ name = "FSGenerator"
 uuid = "041123ec-db0f-41bd-b607-58faf22b65bc"
 authors = ["Davis Thuillier <dsthuillier@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+Contour = "d38c429a-6771-53c6-b99e-75d170b6e991"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
