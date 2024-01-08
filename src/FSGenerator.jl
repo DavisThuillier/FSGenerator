@@ -9,8 +9,14 @@ module FSGenerator
     """
     f0(E::Float64, T::Float64) = 1 / (exp(E/T) + 1)
 
-    include("./mesh/mesh.jl")
+    import StaticArrays: SVector
+    import LinearAlgebra: norm, inv
+    import ForwardDiff: gradient
 
     include("./mesh/marching_squares.jl")
+
+    include("./mesh/mesh.jl")
+
+    
 
 end # module FSGenerator

@@ -1,6 +1,3 @@
-import StaticArrays: SVector
-import LinearAlgebra: norm
-
 struct FermiSurfaceSegment
     points::Vector{SVector{2,Float64}}
     isclosed::Bool
@@ -48,7 +45,9 @@ function find_contour(x, y, A::AbstractMatrix)
 
     cells = get_cells(A)
 
-    is, js = axes(A) # Valid indices for iterating over
+    xax, yax = axes(A) # Valid indices for iterating over
+    is = first(xax):last(xax)-1
+    js = first(yax):last(yax)-1
 
     while Base.length(cells) > 0
         segment = Vector{SVector{2,Float64}}(undef, 0)
@@ -59,11 +58,12 @@ function find_contour(x, y, A::AbstractMatrix)
 
         # Check if the contour forms a loop
         isclosed = end_index == start_index ? true : false
-        isclosed && continue # Find next segment if we have looped back
 
-        # Go back to the starting cell and walk the other direction
-        edge, index = get_next_cell(start_edge, start_index)
-        follow_contour!(cells, reverse!(segment), x, y, A, is, js, index, edge)
+        if !isclosed
+            # Go back to the starting cell and walk the other direction
+            edge, index = get_next_cell(start_edge, start_index)
+            follow_contour!(cells, reverse!(segment), x, y, A, is, js, index, edge)
+        end
 
         seg_length = 0.0
         for i in eachindex(segment)
