@@ -60,9 +60,15 @@ struct Patch
     energy::Float64
     dV::Float64
     jinv::Matrix{Float64} # Jacobian of transformation from (kx, ky) --> (E, s)
+    corners::Vector{Int}
 end
 
-Patch(momentum, f::Function, dV) = Patch(momentum, f(momentum), dV, get_jacobian_inverse(momentum, f))
+Patch(momentum, f::Function, dV, corners) = Patch(momentum, f(momentum), dV, get_jacobian_inverse(momentum, f), corners)
+
+struct Mesh
+    patches::Vector{Patch}
+    corners::Vector{SVector{2, Float64}}
+end
 
 function get_jacobian_inverse(k::SVector{2, Float64}, f::Function)
     J = Matrix{Float64}(undef, 2, 2)
@@ -80,8 +86,6 @@ function temperature_broaden(fs::FermiSurface, f::Function, T::Real, n::Int, thr
 
     energies = LinRange(-e_max, e_max, n + 1)
     Δε = 2 * e_max / n
-    @show energies[2] - energies[1]
-    @show Δε 
     mesh = Matrix{Patch}(undef, n, 0)
     mesh_corners = Matrix{SVector{2,Float64}}(undef, n + 1, 0)
 
@@ -95,15 +99,18 @@ function temperature_broaden(fs::FermiSurface, f::Function, T::Real, n::Int, thr
                 corners[i, j] = get_k_bound(f, energies[i], segment.points[j], vel[j])
             end
         end
-
-        segment_mesh = Matrix{Patch}(undef, n, segment.isclosed ? ℓ : ℓ - 1)
+        
+        m = segment.isclosed ? ℓ : ℓ - 1
+        segment_mesh = Matrix{Patch}(undef, n, m)
         for i in 1:n
             for j in 1:ℓ-1
                 patch_k = (corners[i, j] + corners[i + 1, j] + corners[i + 1, j + 1] + corners[i, j + 1]) / 4
                 segment_mesh[i, j] = Patch(
                     patch_k, 
                     f,
-                    get_patch_area(corners, i, j)
+                    get_patch_area(corners, i, j),
+                    # [(i-1)*m + j, i*m + j, i*m + (j+1), (i-1)*m + (j+1)]
+                    [(j-1)*(n+1) + i, (j-1)*(n+1) + i+1, j*(n+1) + i+1, j*(n+1) + i]
                     )
             end
 
@@ -113,7 +120,8 @@ function temperature_broaden(fs::FermiSurface, f::Function, T::Real, n::Int, thr
                 segment_mesh[i, ℓ] = Patch(
                     patch_k,
                     f,
-                    get_patch_area(corners, i, ℓ)
+                    get_patch_area(corners, i, ℓ),
+                    [(ℓ-1)*(n+1) + i, (ℓ-1)*(n+1) + i+1, 1*(n+1) + i+1, 1*(n+1) + i]
                     )
             end
         end
@@ -122,7 +130,7 @@ function temperature_broaden(fs::FermiSurface, f::Function, T::Real, n::Int, thr
         mesh_corners = hcat(mesh_corners, corners)
     end
 
-    return mesh, mesh_corners, Δε
+    return Mesh(vec(mesh), vec(mesh_corners)), Δε
 end
 
 function get_patch_area(A::Matrix, i::Int, j::Int)

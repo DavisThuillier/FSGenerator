@@ -13,9 +13,11 @@ crossing_lookup = [L|B, B|R, L|R, T|R, 0x0, T|B, L|T, L|T, T|B, 0x0, T|R, L|R, B
 
 function get_cells(A::AbstractMatrix, level::Real = 0.0)
     x, y = axes(A)
-    cells = Dict{Tuple{Int, Int}, UInt8}()
+    cells = OrderedDict{Tuple{Int, Int}, UInt8}()
 
-    @inbounds for i in first(x):last(x)-1
+    startx = (last(x) - 1) ÷ 2 # Start in the middle of the range
+
+    @inbounds for i in [startx:last(x)-1; first(x):startx-1]
         for j in first(y):last(y)-1
             intersect = (A[i, j] > level) ? 0x01 : 0x00
             (A[i + 1, j] > level) && (intersect |= 0x02)
@@ -44,6 +46,7 @@ function find_contour(x, y, A::AbstractMatrix)
     fs = FermiSurface(FermiSurfaceSegment[])
 
     cells = get_cells(A)
+    @show first(cells)
 
     xax, yax = axes(A) # Valid indices for iterating over
     is = first(xax):last(xax)-1

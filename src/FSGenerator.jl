@@ -12,6 +12,7 @@ module FSGenerator
     import StaticArrays: SVector
     import LinearAlgebra: norm, inv
     import ForwardDiff: gradient
+    import DataStructures: OrderedDict
 
     include("./mesh/marching_squares.jl")
 
